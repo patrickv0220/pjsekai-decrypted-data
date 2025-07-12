@@ -51,7 +51,7 @@ for lang, urls in LANGUAGES.items():
 
     for song in music_data:
         song_id = song.get("id")
-        jacket_id = song.get("musicAssetBundleName")
+        jacket_id = song.get("assetbundleName")
         vocal_id = song.get("musicVocalAssetBundleName")
 
         if not jacket_id:

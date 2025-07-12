@@ -10,6 +10,6 @@ This project is not affiliated with or endorsed by the original creators or comp
 
 Please go and support the official game and creators by using official channels. :)
 
-Assete get synced with storage.sekai.best every day at 00:00 UTC.
+Assets get synced with `storage.sekai.best’ every day at 00:00 UTC.
 
 All rights go to SEGA / Colorful Palette Inc. / Crypton Future Media, INC. www.piapro.net

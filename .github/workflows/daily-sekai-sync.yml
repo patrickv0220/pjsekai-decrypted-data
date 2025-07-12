@@ -27,7 +27,7 @@ jobs:
       - name: Commit changes
         run: |
           git config user.name "patrickv0220"
-          git config user.email "vallepatrick0220@gmail.com"
+          git config user.email "90571360+patrickv0220@users.noreply.github.com"
           git add .
           git commit -m "Daily Sekai asset sync" || echo "No changes to commit"
           git push

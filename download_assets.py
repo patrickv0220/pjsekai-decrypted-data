@@ -1,94 +1,87 @@
-import requests
 import os
+import requests
+import json
 
-SERVERS = {
+# Servers and their URLs
+LANGUAGES = {
     "JP": {
-        "master": "https://sekai-world.github.io/sekai-master-db-diff",
-        "assets": "https://storage.sekai.best/sekai-jp-assets"
+        "master": "https://sekai-world.github.io/sekai-master-db-diff/musics.json",
+        "asset": "https://storage.sekai.best/sekai-jp-assets"
     },
     "EN": {
-        "master": "https://sekai-world.github.io/sekai-master-db-en-diff",
-        "assets": "https://storage.sekai.best/sekai-en-assets"
+        "master": "https://sekai-world.github.io/sekai-master-db-en-diff/musics.json",
+        "asset": "https://storage.sekai.best/sekai-en-assets"
     },
     "KR": {
-        "master": "https://sekai-world.github.io/sekai-master-db-kr-diff",
-        "assets": "https://storage.sekai.best/sekai-kr-assets"
+        "master": "https://sekai-world.github.io/sekai-master-db-kr-diff/musics.json",
+        "asset": "https://storage.sekai.best/sekai-kr-assets"
     },
     "ZHT": {
-        "master": "https://sekai-world.github.io/sekai-master-db-tc-diff",
-        "assets": "https://storage.sekai.best/sekai-tc-assets"
+        "master": "https://sekai-world.github.io/sekai-master-db-tc-diff/musics.json",
+        "asset": "https://storage.sekai.best/sekai-tc-assets"
     }
 }
 
-DOWNLOAD_DIR = "."  # Root of your repo folder (e.g., pjsekai-decrypted-data)
+# Set the base download directory
+DOWNLOAD_DIR = "pjsekai-decrypted-data-omg"
 
-CHARTS = ["easy", "normal", "hard", "expert", "master"]
-
-def fetch_json(url):
+# Download file helper
+def download_file(url, path):
     try:
         response = requests.get(url, timeout=30)
-        response.raise_for_status()
-        return response.json()
-    except Exception as e:
-        print(f"Failed to fetch: {url} — {e}")
-        return []
-
-def download_file(url, save_path):
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    try:
-        r = requests.get(url, timeout=30)
-        if r.status_code == 200:
-            with open(save_path, 'wb') as f:
-                f.write(r.content)
-            print(f"✅ Downloaded: {url}")
+        if response.status_code == 200:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "wb") as f:
+                f.write(response.content)
+            print(f"✅ Downloaded: {path}")
         else:
             print(f"⚠️ Not found: {url}")
     except Exception as e:
-        print(f"❌ Error downloading {url} — {e}")
+        print(f"❌ Error downloading {url}: {e}")
 
-def process_server(code, config):
-    print(f"\n🌐 Processing server: {code}")
-    
-    music = fetch_json(f"{config['master']}/music.json")
-    vocals = fetch_json(f"{config['master']}/musicVocals.json")
-    vocal_map = {v["id"]: v for v in vocals}
+# Go through each language
+for lang, urls in LANGUAGES.items():
+    print(f"\n🌐 Syncing {lang} assets...")
+    try:
+        response = requests.get(urls["master"], timeout=30)
+        music_data = response.json()
+    except Exception as e:
+        print(f"❌ Failed to fetch master for {lang}: {e}")
+        continue
 
-    for song in music:
-        music_id = str(song["id"]).zfill(4)
-        chart_id = f"{music_id}_01"
-        vocal = vocal_map.get(song["id"])
-        if not vocal:
+    for song in music_data:
+        song_id = song.get("id")
+        jacket_id = song.get("musicAssetBundleName")
+        vocal_id = song.get("musicVocalAssetBundleName")
+
+        if not jacket_id:
+            print(f"⚠️ Skipping song {song_id} (no jacket ID)")
+            continue
+        if not vocal_id:
+            print(f"⚠️ Skipping song {song_id} (no vocal ID)")
             continue
 
-        asset_name = song["assetbundleName"]
-        vocal_bundle = vocal["assetbundleName"]
+        # Download jacket
+        download_file(
+            f"{urls['asset']}/music/jacket/{jacket_id}/{jacket_id}.png",
+            f"{DOWNLOAD_DIR}/{lang}/jacket/{jacket_id}.png"
+        )
 
-        base = f"{DOWNLOAD_DIR}/{code}"
+        # Download full song
+        download_file(
+            f"{urls['asset']}/music/long/{vocal_id}/{vocal_id}.mp3",
+            f"{DOWNLOAD_DIR}/{lang}/long/{vocal_id}.mp3"
+        )
 
-        # Jacket (simplified path)
-        jacket_url = f"{config['assets']}/music/jacket/{asset_name}/{asset_name}.png"
-        jacket_path = f"{base}/jacket/{asset_name}/{asset_name}.png"
-        download_file(jacket_url, jacket_path)
+        # Download short preview
+        download_file(
+            f"{urls['asset']}/music/short/{vocal_id}/{vocal_id}_short.mp3",
+            f"{DOWNLOAD_DIR}/{lang}/short/{vocal_id}_short.mp3"
+        )
 
-        # Full song
-        full_url = f"{config['assets']}/music/long/{vocal_bundle}/{vocal_bundle}.mp3"
-        full_path = f"{base}/long/{vocal_bundle}/{vocal_bundle}.mp3"
-        download_file(full_url, full_path)
-
-        # Preview
-        preview_url = f"{config['assets']}/music/short/{vocal_bundle}/{vocal_bundle}_short.mp3"
-        preview_path = f"{base}/short/{vocal_bundle}/{vocal_bundle}_short.mp3"
-        download_file(preview_url, preview_path)
-
-        # Charts
-        for diff in CHARTS:
-            chart_url = f"{config['assets']}/music/music_score/{chart_id}/{diff}.txt"
-            chart_path = f"{base}/music_score/{chart_id}/{diff}.txt"
-            download_file(chart_url, chart_path)
-
-def main():
-    for code, config in SERVERS.items():
-        process_server(code, config)
-
-if __name__ == "__main__":
-    main()
+        # Download chart (id_01)
+        chart_folder = f"{str(song_id).zfill(4)}_01"
+        download_file(
+            f"{urls['asset']}/music/music_score/{chart_folder}/difficulty.txt",
+            f"{DOWNLOAD_DIR}/{lang}/music_score/{chart_folder}/difficulty.txt"
+        )

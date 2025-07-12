@@ -1,0 +1,33 @@
+name: Daily Sekai Asset Sync
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Runs every day at midnight UTC
+  workflow_dispatch:     # Allows manual triggering
+
+jobs:
+  update-assets:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run sync script
+        run: python download_assets.py
+
+      - name: Commit changes
+        run: |
+          git config user.name "patrickv0220"
+          git config user.email "vallepatrick0220@gmail.com"
+          git add .
+          git commit -m "Daily Sekai asset sync" || echo "No changes to commit"
+          git push

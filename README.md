@@ -12,4 +12,6 @@ Please go and support the official game and creators by using official channels.
 
 Assets get synced with `storage.sekai.best` every day at 00:00 UTC.
 
+If this repository violates your company's rules, please email vallepatrick0220@gmail.com to delete this repository.
+
 All rights go to SEGA / Colorful Palette Inc. / Crypton Future Media, INC. www.piapro.net

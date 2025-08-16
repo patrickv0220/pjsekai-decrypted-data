@@ -14,4 +14,7 @@ Assets get synced with `storage.sekai.best` every day at 00:00 UTC.
 
 If this repository violates your company's rules, please email patrickvalle897@gmail.com to delete this repository.
 
+## How to Download Charts
+To download a chart, go to the Project SEKAI Wiki and search up the song, after that get the ID and search it up here. After that, you can download it!
+
 All rights go to SEGA / Colorful Palette Inc. / Crypton Future Media, INC. www.piapro.net
